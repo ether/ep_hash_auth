@@ -1,0 +1,10 @@
+{
+  "parts": [
+    {
+      "name": "ep_hash_auth",
+      "hooks": {
+        "authenticate": "ep_hash_auth/ep_hash_auth"
+      }
+    }
+  ]
+}
