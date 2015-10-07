@@ -4,6 +4,13 @@ Allow the use of properly hashed passwords in [etherpad-lite]. Uses [bcrypt](htt
 
 Rework of the insecure SHA2-512 password hashing which was used up to version 1.0.2.
 
+## Generate the hashes
+
+```Shell
+apt-get install -yqq python-bcrypt
+python -c 'from passlib.hash import bcrypt;print(bcrypt.encrypt("password", rounds=10))'
+```
+
 ## Usage
 
 This plugin allows the usage of hash values for authentication in `settings.json`:
