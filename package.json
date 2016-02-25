@@ -1,6 +1,6 @@
 {
   "name": "ep_hash_auth",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Allow the use of hashed passwords in etherpad-lite.",
   "main": "ep_hash_auth.js",
   "scripts": {
@@ -15,13 +15,15 @@
   "author": {
     "name": "István Király"
   },
+  "contributors": {
+    "name": "Robin Schneider",
+    "email": "ypid@riseup.net",
+    "url": "http://github.com/ypid"
+  },
   "license": "GPL-3.0+",
-  "readme": "This plugin allows the usage of hash values for authentoication in settings.json\n\n  \"users\": {\n\t\"admin\": {\"password\": \"admin\",\"is_admin\": true},\n\t\"y\": {\"is_admin\": true, \"hash\": \"b2112aa73994bd7cbb07732326ee102d585e706bb2e4fb878df5b5706ea92522f67b9f9dbc0208e2bd5b0f9cb21221bfb970f36a63e27e1a128ebc44d1ea5976\"}\n  }\n\noptionally specify hash type and digest, defaults are:\n\n  \"ep_hash_auth\": {\n    \"hash_typ\": \"sha512\",\n    \"hash_dig\": \"hex\"\n  },\n  \n",
   "readmeFilename": "README.md",
-  "_id": "ep_hash_auth@1.0.2",
   "dist": {
     "shasum": "b70bac22435e00a0196fee2e7db1b228dc5bebf5"
   },
-  "_from": "ep_hash_auth@",
-  "_resolved": "https://registry.npmjs.org/ep_hash_auth/-/ep_hash_auth-1.0.2.tgz"
-}
+  "_from": "ep_hash_auth@"
+ }
