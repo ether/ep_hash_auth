@@ -39,5 +39,4 @@ The hash_adm parameter defines the role of file-authenticated users, by default 
 * István Király [LaKing](https://github.com/LaKing) (author and maintainer)
 * [Robin `ypid` Schneider](https://github.com/ypid) (contributor)
 
-## the npm
-(https://www.npmjs.com/package/ep_hash_auth)
+## the [npm](https://www.npmjs.com/package/ep_hash_auth)
