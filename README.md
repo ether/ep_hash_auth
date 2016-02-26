@@ -7,7 +7,7 @@ Besides settings.json, it is now possible to store the user-database in a filesy
 ```JSON
   "users": {
 	"admin": {"password": "admin","is_admin": true},
-	"y": {"is_admin": true, "hash": "b2112aa73994bd7cbb07732326ee102d585e706bb2e4fb878df5b5706ea92522f67b9f9dbc0208e2bd5b0f9cb21221bfb970f36a63e27e1a128ebc44d1ea5976"}
+	"y": {"is_admin": true, "hash": "b2112aa7399 ... b071ea5976"}
   }
 ```
 
