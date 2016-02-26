@@ -1,6 +1,6 @@
 {
   "name": "ep_hash_auth",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "Allow the use of hashed passwords in etherpad-lite.",
   "main": "ep_hash_auth.js",
   "scripts": {
@@ -12,8 +12,15 @@
     "auth",
     "etherpad-lite"
   ],
+  "repository" :
+  { 
+    "type" : "git",
+    "url" : "https://github.com/LaKing/ep_hash_auth"
+  },
   "author": {
-    "name": "István Király"
+    "name": "István Király",
+    "email": "LaKing@D250.hu",
+    "url": "http://D250.hu"
   },
   "contributors": {
     "name": "Robin Schneider",
