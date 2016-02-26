@@ -1,7 +1,7 @@
 # ep_hash_auth
 
 This [etherpad-lite](http://etherpad.org) plugin allows the usage of hashed passwords for authentication.
-As of version 2.x it uses the crypto lib and/or the bcrypt lib [bcrypt](https://www.npmjs.com/package/bcrypt) for comparison.
+As of version 2.x it uses the crypto lib and/or the [bcrypt](https://www.npmjs.com/package/bcrypt) lib for comparison.
 Besides settings.json, it is now possible to store the user-database in a filesystem hierarchy. The hash files are read on authentication.
 
 ```JSON
