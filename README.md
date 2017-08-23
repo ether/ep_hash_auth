@@ -30,8 +30,8 @@ The hash_adm parameter defines the role of file-authenticated users, by default 
 
 ## Generate the hashes
 ```Shell
- 	 apt-get install -yqq python-bcrypt
- 	 python -c 'from passlib.hash import bcrypt;print(bcrypt.encrypt("password", rounds=10))'
+apt-get install -yqq python-bcrypt
+python -c 'import bcrypt; print(bcrypt.hashpw(b"password", bcrypt.gensalt(rounds=10, prefix=b"2a")))'
 ```
 
 ## Credits
