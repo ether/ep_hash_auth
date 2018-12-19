@@ -1,6 +1,7 @@
 // 2.x hash based authentication for etherpad
 // 2014-2016 - István Király - LaKing@D250.hu
 // Contributions by Robin Schneider <ypid@riseup.net>
+// Contributions by id01 <https://github.com/id01>
 
 // Made on codepad :P
 
@@ -10,8 +11,21 @@ var authorManager = require('ep_etherpad-lite/node/db/AuthorManager');
 var sessionManager = require('ep_etherpad-lite/node/db/SessionManager');
 var crypto = require('crypto');
 
-// npm install bcrypt
-var bcrypt = require('bcrypt');
+// npm install bcrypt/scrypt/argon2 (optional but recommended)
+function optionalRequire(library, name, npmLibrary) {
+    try {
+         return require(library);
+    } catch(e) {
+         console.log('Note: '+library+' library could not be found. '+name+' support will be disabled.');
+         if (npmLibrary) {
+             console.log('Run "npm install '+npmLibrary+'" to enable '+name);
+         }
+    }
+}
+
+var bcrypt = optionalRequire("bcrypt", "bcrypt", "bcrypt");
+var scrypt = optionalRequire("scrypt", "scrypt", "scrypt");
+var argon2 = optionalRequire("argon2", "argon2", "argon2");
 
 // ocrypt-relevant options
 var hash_typ = "sha512";
@@ -33,61 +47,83 @@ if (settings.ep_hash_auth) {
     if (settings.ep_hash_auth.hash_adm) hash_adm = settings.ep_hash_auth.hash_adm;
 }
 
+// Let's make a function to compare our hashes now that we have multiple comparisons required.
+// This function calls callback(hashType) if authenticated, or callback(null) if not.
+async function compareHashes(password, hash, callback) {
+    var cryptoHash = crypto.createHash(hash_typ).update(password).digest(hash_dig);
+    if (hash == cryptoHash) { // Check whether this is a crypto hash first
+        return callback("crypto");
+    } else { // If not, check other hash types
+        if (hash[0] === '$') { // This is an argon2 or bcrypt hash
+            if (hash.slice(0, 7) === '$argon2') { // This is argon2
+                if (argon2) {
+                    if (await argon2.verify(hash, password)) {
+                        return callback("argon2");
+                    } else {
+                        return callback(null);
+                    };
+                } else {
+                    console.log("Warning: Could not verify argon2 hash due to missing dependency");
+                }
+            } else { // This is bcrypt
+                if (bcrypt) {
+                    if (await bcrypt.compare(password, hash)) {
+                        return callback("bcrypt");
+                    } else {
+                        return callback(null);
+                    }
+                } else {
+                    console.log("Warning: Could not verify bcrypt hash due to missing dependency");
+                }
+            }
+        } else { // This is a scrypt hash or a failed crypto hash
+            if (scrypt) {
+                if (scrypt.verifyKdfSync(Buffer.from(hash, 'hex'), Buffer.from(password))) {
+                    return callback("scrypt");
+                } else {
+                    return callback(null);
+                }
+            } else {
+                console.log("Warning: Could not verify scrypt hash due to missing dependency");
+            }
+        }
+    }
+    return callback(null);
+}
+
 exports.authenticate = function(hook_name, context, cb) {
     if (context.req.headers.authorization && context.req.headers.authorization.search('Basic ') === 0) {
         var userpass = new Buffer(context.req.headers.authorization.split(' ')[1], 'base64').toString().split(":");
         var username = userpass.shift();
         var password = userpass.join(':');
 
-        var hash = crypto.createHash(hash_typ).update(password).digest(hash_dig);
-
         // Authenticate user via settings.json
         if (settings.users[username] !== undefined && settings.users[username].hash !== undefined) {
-                if (settings.users[username].hash == hash) {
-                    console.log("Authenticated (crypto) " + username);
+            compareHashes(password, settings.users[username].hash, function(hashType) {
+                if (hashType) {
+                    console.log("Log: Authenticated ("+hashType+") " + username);
                     settings.users[username].username = username;
                     context.req.session.user = settings.users[username];
                     return cb([true]);
-                } else {
-                    bcrypt.compare(password, settings.users[username].hash, function(err, res) {
-                        if (err || !res) return cb([false]);
-                        else {
-                            console.log("Authenticated (bcrypt) " + username);
-                            settings.users[username].username = username;
-                            context.req.session.user = settings.users[username];
-                            return cb([true]);
-                        }
-                    });
-                }
+                } else {return cb([false]);}
+            });
         } else {
             // Authenticate user via hash_dir
             var path = hash_dir + "/" + username + hash_ext;
             fs.readFile(path, 'utf8', function(err, contents) {
                 if (err) {
                     // file not found, or inaccessible
-                    console.log("AUTH: cannot authenticate " + username);
+                    console.log("Error: Failed authentication attempt for " + username + ": no authentication found");
                     return cb([false]);
                 } else {
-                    if (contents === hash) {
-                        console.log("Authenticated (crypto-file) " + username);
-                        settings.users[username] = {};
-                        settings.users[username].username = username;
-                        settings.users[username].is_admin = hash_adm;
-                        context.req.session.user = settings.users[username];
-                        return cb([true]);
-                    } else {
-                        bcrypt.compare(password, contents, function(err, res) {
-                            if (err || !res) return cb([false]);
-                            else {
-                                console.log("Authenticated (bcrypt-file) " + username);
-                                settings.users[username] = {};
-                                settings.users[username].username = username;
-                                settings.users[username].is_admin = hash_adm;
-                                context.req.session.user = settings.users[username];
-                                return cb([true]);
-                            }
-                        });
-                    }
+                    compareHashes(password, contents, function(hashType) {
+                        if (hashType) {
+                            console.log("Log: Authenticated ("+hashType+"-file) " + username);
+                            settings.users[username] = {'username': username, 'is_admin': hash_adm};
+                            context.req.session.user = settings.users[username];
+                            return cb([true]);
+                        } else {return cb([false]);}
+                    });
                 }
             });
         }
