@@ -29,14 +29,26 @@ This means user Alice would have to have her hash in sha512 hex OR in bcrypt for
 The hash_adm parameter defines the role of file-authenticated users, by default they are not admins.
 
 ## Generate the hashes
+#### Bcrypt:
 ```Shell
 apt-get install -yqq python-bcrypt
 python -c 'import bcrypt; print(bcrypt.hashpw(b"password", bcrypt.gensalt(rounds=10, prefix=b"2a")))'
+```
+#### Scrypt:
+```Javascript
+var scrypt = require('scrypt');
+console.log(scrypt.kdfSync("password", scrypt.paramsSync(0.1)));
+```
+#### Argon2:
+```Javascript
+var argon2 = require('argon2');
+argon2.hash("password", {timeCost: 4, memoryCost: 2 ** 13, parallelism: 2, type: argon2.argon2i}).then(hash => {console.log(hash);});
 ```
 
 ## Credits
 
 * István Király [LaKing](https://github.com/LaKing) (author and maintainer)
 * [Robin `ypid` Schneider](https://github.com/ypid) (contributor)
+* [id01](https://github.com/id01) (contributor)
 
 ## the [npm](https://www.npmjs.com/package/ep_hash_auth)
