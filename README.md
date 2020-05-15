@@ -7,7 +7,8 @@ Besides settings.json, it is now possible to store the user-database in a filesy
 ```JSON
   "users": {
 	"admin": {"password": "admin","is_admin": true},
-	"y": {"is_admin": true, "hash": "b2112aa7399 ... b071ea5976"}
+	"y": {"is_admin": true, "hash": "b2112aa7399 ... b071ea5976"},
+	"z": {"is_admin": true, "hash": "b5152ab7359 ... a041fa5646", "displayname": "Jane Doe"}
   }
 ```
 
@@ -19,7 +20,8 @@ optionally specify hash type and digest, folders and extension, defaults are:
     "hash_dig": "hex",
     "hash_dir": "/var/etherpad/users",
     "hash_ext": "/.hash",
-    "hash_adm": false
+    "hash_adm": false,
+    "displayname_ext": "/.displayname"
   },
 ```
 This means user Alice would have to have her hash in sha512 hex OR in bcrypt format in the following file:
@@ -27,6 +29,8 @@ This means user Alice would have to have her hash in sha512 hex OR in bcrypt for
 /var/etherpad/users/Alice/.hash
 ```
 The hash_adm parameter defines the role of file-authenticated users, by default they are not admins.
+
+The displayname_ext parameter defines from which file the displayname of a user can be read. If the file does not exist for a user, the displayname remains unchanged.
 
 ## Generate the hashes
 #### Bcrypt:
