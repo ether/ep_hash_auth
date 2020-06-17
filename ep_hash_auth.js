@@ -37,6 +37,8 @@ var hash_dir = '/var/etherpad/users';
 var hash_ext = '/.hash';
 // by default peple logged in that authenticated over a hash file, are admins?
 var hash_adm = false;
+// default filename containing the displayname of a user
+var displayname_ext = '/.displayname';
 
 
 if (settings.ep_hash_auth) {
@@ -45,6 +47,7 @@ if (settings.ep_hash_auth) {
     if (settings.ep_hash_auth.hash_dir) hash_dir = settings.ep_hash_auth.hash_dir;
     if (settings.ep_hash_auth.hash_ext) hash_ext = settings.ep_hash_auth.hash_ext;
     if (settings.ep_hash_auth.hash_adm) hash_adm = settings.ep_hash_auth.hash_adm;
+    if (settings.ep_hash_auth.displayname_ext) displayname_ext = settings.ep_hash_auth.displayname_ext;
 }
 
 // Let's make a function to compare our hashes now that we have multiple comparisons required.
@@ -104,6 +107,13 @@ exports.authenticate = function(hook_name, context, cb) {
                     console.log("Log: Authenticated ("+hashType+") " + username);
                     settings.users[username].username = username;
                     context.req.session.user = settings.users[username];
+                    // use displayname if available
+                    if(settings.users[username].displayname !== undefined) {
+                         context.req.session.user['displayname'] = settings.users[username].displayname;
+                    }
+                    else {
+                         console.log("Log: displayname not found for user " + username);
+                    }
                     return cb([true]);
                 } else {return cb([false]);}
             });
@@ -119,9 +129,19 @@ exports.authenticate = function(hook_name, context, cb) {
                     compareHashes(password, contents, function(hashType) {
                         if (hashType) {
                             console.log("Log: Authenticated ("+hashType+"-file) " + username);
-                            settings.users[username] = {'username': username, 'is_admin': hash_adm};
-                            context.req.session.user = settings.users[username];
-                            return cb([true]);
+                            // read displayname if available
+                            var displaynamepath = hash_dir + "/" + username + displayname_ext;
+                            fs.readFile(displaynamepath, 'utf8', function(err, contents) {
+                                var displayname;
+                                if (err) {
+                                    console.log("Log: Could not load displayname for " + username);
+                                } else {
+                                    displayname = contents;
+                                }
+                                settings.users[username] = {'username': username, 'is_admin': hash_adm, 'displayname': displayname};
+                                context.req.session.user = settings.users[username];
+                                return cb([true]);
+                            });
                         } else {return cb([false]);}
                     });
                 }
@@ -130,3 +150,18 @@ exports.authenticate = function(hook_name, context, cb) {
     } else return cb([false]);
 
 };
+
+exports.handleMessage = function (hook_name, context, cb) {
+    // skip if we don't have any information to set
+    var session = context.client.client.request.session;
+    if (!session || !session.user || !session.user.displayname) return cb();
+
+   authorManager.getAuthor4Token(context.message.token).then(function (author) {
+        authorManager.setAuthorName(author, context.client.client.request.session.user.displayname);
+        cb();
+    }).catch(function (error) {
+        console.error('handleMessage: could not get authorid for token %s', context.message.token, error);
+        cb();
+    });
+};
+
