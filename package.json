@@ -4,7 +4,7 @@
   "description": "Allow the use of hashed passwords in etherpad-lite.",
   "main": "ep_hash_auth.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm test"
   },
   "keywords": [
     "hash",
@@ -13,7 +13,7 @@
     "etherpad-lite"
   ],
   "repository" :
-  { 
+  {
     "type" : "git",
     "url" : "https://github.com/LaKing/ep_hash_auth"
   },
