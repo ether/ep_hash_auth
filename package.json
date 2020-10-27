@@ -31,5 +31,9 @@
   "dist": {
     "shasum": "b70bac22435e00a0196fee2e7db1b228dc5bebf5"
   },
-  "_from": "ep_hash_auth@"
+  "_from": "ep_hash_auth@",
+  "funding": {
+    "type": "individual",
+    "url": "http://etherpad.org/"
+  }
 }
