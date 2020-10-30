@@ -3,9 +3,6 @@
   "version": "3.0.4",
   "description": "Allow the use of hashed passwords in etherpad-lite.",
   "main": "ep_hash_auth.js",
-  "scripts": {
-    "test": "npm test"
-  },
   "keywords": [
     "hash",
     "password",
