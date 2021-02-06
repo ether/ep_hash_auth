@@ -100,7 +100,7 @@ const compareHashes = async (password, hash, callback) => {
 exports.authenticate = (hook_name, context, cb) => {
   if (context.req.headers.authorization &&
       context.req.headers.authorization.search('Basic ') === 0) {
-    const userpass = new Buffer(
+    const userpass = Buffer.from(
         context.req.headers.authorization.split(' ')[1], 'base64').toString().split(':');
     const username = userpass.shift();
     const password = userpass.join(':');
