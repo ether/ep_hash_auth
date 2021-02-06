@@ -1,3 +1,5 @@
+'use strict';
+
 // 2.x hash based authentication for etherpad
 // 2014-2016 - István Király - LaKing@D250.hu
 // Contributions by Robin Schneider <ypid@riseup.net>
@@ -8,11 +10,10 @@
 const fs = require('fs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 const authorManager = require('ep_etherpad-lite/node/db/AuthorManager');
-const sessionManager = require('ep_etherpad-lite/node/db/SessionManager');
 const crypto = require('crypto');
 
 // npm install bcrypt/scrypt/argon2 (optional but recommended)
-function optionalRequire(library, name, npmLibrary) {
+const optionalRequire = (library, name, npmLibrary) => {
   try {
     return require(library);
   } catch (e) {
@@ -21,7 +22,7 @@ function optionalRequire(library, name, npmLibrary) {
       console.log(`Run "npm install ${npmLibrary}" to enable ${name}`);
     }
   }
-}
+};
 
 const bcrypt = optionalRequire('bcrypt', 'bcrypt', 'bcrypt');
 const scrypt = optionalRequire('scrypt', 'scrypt', 'scrypt');
@@ -47,14 +48,16 @@ if (settings.ep_hash_auth) {
   if (settings.ep_hash_auth.hash_dir) hash_dir = settings.ep_hash_auth.hash_dir;
   if (settings.ep_hash_auth.hash_ext) hash_ext = settings.ep_hash_auth.hash_ext;
   if (settings.ep_hash_auth.hash_adm) hash_adm = settings.ep_hash_auth.hash_adm;
-  if (settings.ep_hash_auth.displayname_ext) displayname_ext = settings.ep_hash_auth.displayname_ext;
+  if (settings.ep_hash_auth.displayname_ext) {
+    displayname_ext = settings.ep_hash_auth.displayname_ext;
+  }
 }
 
 // Let's make a function to compare our hashes now that we have multiple comparisons required.
 // This function calls callback(hashType) if authenticated, or callback(null) if not.
-async function compareHashes(password, hash, callback) {
+const compareHashes = async (password, hash, callback) => {
   const cryptoHash = crypto.createHash(hash_typ).update(password).digest(hash_dig);
-  if (hash == cryptoHash) { // Check whether this is a crypto hash first
+  if (hash === cryptoHash) { // Check whether this is a crypto hash first
     return callback('crypto');
   } else { // If not, check other hash types
     if (hash[0] === '$') { // This is an argon2 or bcrypt hash
@@ -92,11 +95,13 @@ async function compareHashes(password, hash, callback) {
     }
   }
   return callback(null);
-}
+};
 
-exports.authenticate = function (hook_name, context, cb) {
-  if (context.req.headers.authorization && context.req.headers.authorization.search('Basic ') === 0) {
-    const userpass = new Buffer(context.req.headers.authorization.split(' ')[1], 'base64').toString().split(':');
+exports.authenticate = (hook_name, context, cb) => {
+  if (context.req.headers.authorization &&
+      context.req.headers.authorization.search('Basic ') === 0) {
+    const userpass = new Buffer(
+        context.req.headers.authorization.split(' ')[1], 'base64').toString().split(':');
     const username = userpass.shift();
     const password = userpass.join(':');
 
@@ -122,7 +127,8 @@ exports.authenticate = function (hook_name, context, cb) {
       fs.readFile(path, 'utf8', (err, contents) => {
         if (err) {
           // file not found, or inaccessible
-          console.log(`Error: Failed authentication attempt for ${username}: no authentication found`);
+          console.log(
+              `Error: Failed authentication attempt for ${username}: no authentication found`);
           return cb([false]);
         } else {
           compareHashes(password, contents, (hashType) => {
@@ -149,7 +155,7 @@ exports.authenticate = function (hook_name, context, cb) {
   } else { return cb([false]); }
 };
 
-exports.handleMessage = function (hook_name, context, cb) {
+exports.handleMessage = (hook_name, context, cb) => {
   // skip if we don't have any information to set
   const session = context.client.client.request.session;
   if (!session || !session.user || !session.user.displayname) return cb();
@@ -158,7 +164,8 @@ exports.handleMessage = function (hook_name, context, cb) {
     authorManager.setAuthorName(author, context.client.client.request.session.user.displayname);
     cb();
   }).catch((error) => {
-    console.error('handleMessage: could not get authorid for token %s', context.message.token, error);
+    console.error(
+        'handleMessage: could not get authorid for token %s', context.message.token, error);
     cb();
   });
 };
