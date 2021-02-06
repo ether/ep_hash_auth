@@ -57,42 +57,41 @@ if (settings.ep_hash_auth) {
 // This function calls callback(hashType) if authenticated, or callback(null) if not.
 const compareHashes = async (password, hash, callback) => {
   const cryptoHash = crypto.createHash(hash_typ).update(password).digest(hash_dig);
+
   if (hash === cryptoHash) { // Check whether this is a crypto hash first
     return callback('crypto');
-  } else { // If not, check other hash types
-    if (hash[0] === '$') { // This is an argon2 or bcrypt hash
-      if (hash.slice(0, 7) === '$argon2') { // This is argon2
-        if (argon2) {
-          if (await argon2.verify(hash, password)) {
-            return callback('argon2');
-          } else {
-            return callback(null);
-          }
-        } else {
-          console.log('Warning: Could not verify argon2 hash due to missing dependency');
-        }
-      } else { // This is bcrypt
-        if (bcrypt) {
-          if (await bcrypt.compare(password, hash)) {
-            return callback('bcrypt');
-          } else {
-            return callback(null);
-          }
-        } else {
-          console.log('Warning: Could not verify bcrypt hash due to missing dependency');
-        }
-      }
-    } else { // This is a scrypt hash or a failed crypto hash
-      if (scrypt) {
-        if (scrypt.verifyKdfSync(Buffer.from(hash, 'hex'), Buffer.from(password))) {
-          return callback('scrypt');
+    // If not, check other hash types
+  } else if (hash[0] === '$') {
+    // This is an argon2 or bcrypt hash
+    if (hash.slice(0, 7) === '$argon2') {
+      // This is argon2
+      if (argon2) {
+        if (await argon2.verify(hash, password)) {
+          return callback('argon2');
         } else {
           return callback(null);
         }
       } else {
-        console.log('Warning: Could not verify scrypt hash due to missing dependency');
+        console.log('Warning: Could not verify argon2 hash due to missing dependency');
       }
+    } else if (bcrypt) {
+      if (await bcrypt.compare(password, hash)) {
+        return callback('bcrypt');
+      } else {
+        return callback(null);
+      }
+    } else {
+      console.log('Warning: Could not verify bcrypt hash due to missing dependency');
     }
+  } else if (scrypt) {
+    // This is a scrypt hash or a failed crypto hash
+    if (scrypt.verifyKdfSync(Buffer.from(hash, 'hex'), Buffer.from(password))) {
+      return callback('scrypt');
+    } else {
+      return callback(null);
+    }
+  } else {
+    console.log('Warning: Could not verify scrypt hash due to missing dependency');
   }
   return callback(null);
 };
