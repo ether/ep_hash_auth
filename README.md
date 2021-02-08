@@ -1,3 +1,5 @@
+![Publish Status](https://github.com/ether/ep_hash_auth/workflows/Node.js%20Package/badge.svg) ![Backend Tests Status](https://github.com/ether/ep_hash_auth/workflows/Backend%20tests/badge.svg)
+
 # ep_hash_auth
 
 This [Etherpad](http://etherpad.org) plugin allows the usage of hashed passwords for authentication.
