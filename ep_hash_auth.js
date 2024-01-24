@@ -40,6 +40,8 @@ let hash_ext = '/.hash';
 let hash_adm = false;
 // default filename containing the displayname of a user
 let displayname_ext = '/.displayname';
+// default filename containing the is_admin bool
+let hash_adm_ext = '/.adm';
 
 
 if (settings.ep_hash_auth) {
@@ -50,6 +52,9 @@ if (settings.ep_hash_auth) {
   if (settings.ep_hash_auth.hash_adm) hash_adm = settings.ep_hash_auth.hash_adm;
   if (settings.ep_hash_auth.displayname_ext) {
     displayname_ext = settings.ep_hash_auth.displayname_ext;
+  }
+  if (settings.ep_hash_auth.hash_adm_ext) {
+    hash_adm_ext = settings.ep_hash_auth.hash_adm_ext;
   }
 }
 
@@ -142,9 +147,20 @@ exports.authenticate = (hook_name, context, cb) => {
                 } else {
                   displayname = contents;
                 }
-                settings.users[username] = {username, is_admin: hash_adm, displayname};
-                context.req.session.user = settings.users[username];
-                return cb([true]);
+                // read admin file if available
+                const admpath = `${hash_dir}/${username}${hash_adm_ext}`;
+                fs.readFile(admpath, 'utf8', (err, contents) => {
+                  let adm = false;
+                  if (err) {
+                    console.log(`Log: Could not load adm file for ${username}. Using hash_adm value`);
+                    adm = hash_adm;
+                  } else {
+                    adm = (contents === 'true');
+                  }
+                  settings.users[username] = {username, is_admin: adm, displayname};
+                  context.req.session.user = settings.users[username];
+                  return cb([true]);
+                });
               });
             } else { return cb([false]); }
           });
