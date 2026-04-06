@@ -23,7 +23,8 @@ optionally specify hash type and digest, folders and extension, defaults are:
     "hash_dir": "/var/etherpad/users",
     "hash_ext": "/.hash",
     "hash_adm": false,
-    "displayname_ext": "/.displayname"
+    "displayname_ext": "/.displayname",
+    "hash_adm_ext": "/.adm"
   },
 ```
 This means user Alice would have to have her hash in sha512 hex OR in bcrypt format in the following file:
@@ -33,6 +34,8 @@ This means user Alice would have to have her hash in sha512 hex OR in bcrypt for
 The hash_adm parameter defines the role of file-authenticated users, by default they are not admins.
 
 The displayname_ext parameter defines from which file the displayname of a user can be read. If the file does not exist for a user, the displayname remains unchanged.
+
+The hash_adm_ext parameter defines from which file the is_admin boolean of a user can be read. If the file does not exist for a user, the hash_adm value will be used.
 
 ## Generate the hashes
 #### Bcrypt:
@@ -56,5 +59,6 @@ argon2.hash("password", {timeCost: 4, memoryCost: 2 ** 13, parallelism: 2, type:
 * István Király [LaKing](https://github.com/LaKing) (author and maintainer)
 * [Robin `ypid` Schneider](https://github.com/ypid) (contributor)
 * [id01](https://github.com/id01) (contributor)
+* [wollsi](https://github.com/wollsi) (contributer)
 
 ## the [npm](https://www.npmjs.com/package/ep_hash_auth)
