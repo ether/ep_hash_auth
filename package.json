@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/LaKing/ep_hash_auth"
+    "url": "https://github.com/ether/ep_hash_auth.git"
   },
   "author": {
     "name": "István Király",
