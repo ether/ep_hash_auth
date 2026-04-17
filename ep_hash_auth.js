@@ -125,7 +125,13 @@ exports.authenticate = (hook_name, context, cb) => {
               `Error: Failed authentication attempt for ${username}: no authentication found`);
           return cb([false]);
         } else {
-          compareHashes(password, contents, (hashType) => {
+          // Hash files produced with `echo "..." > .hash` or a text editor
+          // (vi, nano, …) almost always end with a trailing newline. Strip
+          // it before comparing; otherwise every bcrypt/scrypt/crypto check
+          // silently fails and users see cryptic "no such user" errors
+          // (#8). trim() also tolerates accidental leading whitespace.
+          const hashFromFile = contents.trim();
+          compareHashes(password, hashFromFile, (hashType) => {
             if (hashType) {
               console.log(`Log: Authenticated (${hashType}-file) ${username}`);
               // read displayname if available
@@ -135,7 +141,7 @@ exports.authenticate = (hook_name, context, cb) => {
                 if (err) {
                   console.log(`Log: Could not load displayname for ${username}`);
                 } else {
-                  displayname = contents;
+                  displayname = contents.trim();
                 }
                 settings.users[username] = {username, is_admin: hash_adm, displayname};
                 context.req.session.user = settings.users[username];
