@@ -33,6 +33,10 @@
     "type": "individual",
     "url": "https://etherpad.org/"
   },
+  "optionalDependencies": {
+    "argon2": "^0.44.0",
+    "bcrypt": "^6.0.0"
+  },
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-config-etherpad": "^4.0.5",
