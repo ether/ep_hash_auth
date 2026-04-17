@@ -1,6 +1,6 @@
 ![Publish Status](https://github.com/ether/ep_hash_auth/workflows/Node.js%20Package/badge.svg) [![Backend Tests Status](https://github.com/ether/ep_hash_auth/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/ether/ep_hash_auth/actions/workflows/test-and-release.yml)
 
-# ep_hash_auth
+# Hash-Based Authentication for Etherpad
 
 This [Etherpad](http://etherpad.org) plugin allows the usage of hashed passwords for authentication.
 As of version 2.x it uses the crypto lib and/or the [bcrypt](https://www.npmjs.com/package/bcrypt) lib for comparison.
