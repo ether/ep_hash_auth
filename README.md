@@ -40,11 +40,6 @@ The displayname_ext parameter defines from which file the displayname of a user 
 apt-get install -yqq python-bcrypt
 python -c 'import bcrypt; print(bcrypt.hashpw(b"password", bcrypt.gensalt(rounds=10, prefix=b"2a")))'
 ```
-#### Scrypt:
-```Javascript
-var scrypt = require('scrypt');
-console.log(scrypt.kdfSync("password", scrypt.paramsSync(0.1)));
-```
 #### Argon2:
 ```Javascript
 var argon2 = require('argon2');
