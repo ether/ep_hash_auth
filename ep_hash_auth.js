@@ -12,7 +12,12 @@ const settings = require('ep_etherpad-lite/node/utils/Settings');
 const authorManager = require('ep_etherpad-lite/node/db/AuthorManager');
 const crypto = require('crypto');
 
-// npm install bcrypt/scrypt/argon2 (optional but recommended)
+// npm install bcrypt/argon2 (optional but recommended)
+//
+// Note: the `scrypt` npm module is deprecated and has not built against
+// modern Node.js for years (#10). If you still have scrypt-format hashes,
+// re-hash them with bcrypt or argon2 — both are still actively
+// maintained.
 const optionalRequire = (library, name, npmLibrary) => {
   try {
     return require(library);
@@ -25,7 +30,6 @@ const optionalRequire = (library, name, npmLibrary) => {
 };
 
 const bcrypt = optionalRequire('bcrypt', 'bcrypt', 'bcrypt');
-const scrypt = optionalRequire('scrypt', 'scrypt', 'scrypt');
 const argon2 = optionalRequire('argon2', 'argon2', 'argon2');
 
 // ocrypt-relevant options
@@ -83,15 +87,6 @@ const compareHashes = async (password, hash, callback) => {
     } else {
       console.log('Warning: Could not verify bcrypt hash due to missing dependency');
     }
-  } else if (scrypt) {
-    // This is a scrypt hash or a failed crypto hash
-    if (scrypt.verifyKdfSync(Buffer.from(hash, 'hex'), Buffer.from(password))) {
-      return callback('scrypt');
-    } else {
-      return callback(null);
-    }
-  } else {
-    console.log('Warning: Could not verify scrypt hash due to missing dependency');
   }
   return callback(null);
 };
