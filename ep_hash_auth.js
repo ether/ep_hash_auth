@@ -153,10 +153,12 @@ exports.authenticate = (hook_name, context, cb) => {
                 fs.readFile(admpath, 'utf8', (err, contents) => {
                   let adm = false;
                   if (err) {
-                    console.log(`Log: Could not load adm file for ${username}. Using hash_adm value`);
                     adm = hash_adm;
                   } else {
-                    adm = (contents === 'true');
+                    // Files written with `echo "true" > .adm` end in a
+                    // newline; trim before comparing or every per-user admin
+                    // flag silently falls back to hash_adm.
+                    adm = (contents.trim() === 'true');
                   }
                   settings.users[username] = {username, is_admin: adm, displayname};
                   context.req.session.user = settings.users[username];
