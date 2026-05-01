@@ -171,6 +171,50 @@ exports.authenticate = (hook_name, context, cb) => {
   } else { return cb([false]); }
 };
 
+// Path the client and server both use for the logout dance. Kept short so
+// curl-based logouts stay easy to type.
+const LOGOUT_PATH = '/ep_hash_auth/logout';
+
+// Logging out of HTTP Basic auth is a browser-quirk problem. Destroying
+// `req.session.user` is necessary but not sufficient — the browser keeps
+// re-sending the cached `Authorization` header on every subsequent request.
+// We do two things:
+//   1. Server returns 401 with a fresh `WWW-Authenticate` realm. This nudges
+//      Firefox/Safari to drop their cred cache for the original realm.
+//   2. Client first calls /logout with a deliberately wrong Authorization
+//      header, which overwrites Chrome's cred cache for this origin.
+// The combination is what works cross-browser; either one alone leaves at
+// least one major browser still authenticated.
+exports.expressCreateServer = (hookName, {app}, cb) => {
+  app.get(LOGOUT_PATH, (req, res) => {
+    if (req.session && req.session.user) delete req.session.user;
+    // Use a per-request realm so the browser sees this as a *different*
+    // protection space than the one it cached creds for.
+    res.set('WWW-Authenticate', `Basic realm="ep_hash_auth-logout-${Date.now()}"`);
+    res.status(401).send(
+        '<!doctype html><meta charset="utf-8"><title>Logged out</title>' +
+        '<p>You have been logged out. ' +
+        '<a href="/">Return to the home page</a>.</p>');
+  });
+  return cb();
+};
+
+exports.eejsBlock_userlist = (hookName, args, cb) => {
+  args.content +=
+      '<div id="ep_hash_auth_logout">' +
+      '<button id="ep_hash_auth_logout_btn" class="btn btn-default" ' +
+      'data-l10n-id="ep_hash_auth.logout" ' +
+      'aria-label="Log out of this Etherpad session">Log out</button>' +
+      '</div>';
+  return cb();
+};
+
+exports.eejsBlock_scripts = (hookName, args, cb) => {
+  args.content +=
+      '<script src="/static/plugins/ep_hash_auth/static/js/logout.js"></script>';
+  return cb();
+};
+
 exports.handleMessage = (hook_name, context, cb) => {
   // skip if we don't have any information to set
   const session = context.client.client.request.session;
