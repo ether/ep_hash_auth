@@ -4,7 +4,10 @@
       "name": "ep_hash_auth",
       "hooks": {
         "authenticate": "ep_hash_auth/ep_hash_auth",
-        "handleMessage": "ep_hash_auth/ep_hash_auth"
+        "handleMessage": "ep_hash_auth/ep_hash_auth",
+        "expressCreateServer": "ep_hash_auth/ep_hash_auth",
+        "eejsBlock_userlist": "ep_hash_auth/ep_hash_auth",
+        "eejsBlock_scripts": "ep_hash_auth/ep_hash_auth"
       }
     }
   ]
