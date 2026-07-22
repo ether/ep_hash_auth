@@ -19,8 +19,8 @@ importers:
         version: 7.0.2
     optionalDependencies:
       argon2:
-        specifier: ^0.45.0
-        version: 0.45.0
+        specifier: ^0.45.1
+        version: 0.45.1
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
@@ -383,8 +383,8 @@ packages:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
 
-  argon2@0.45.0:
-    resolution: {integrity: sha512-Ob6jYdMisRcYU+FUF4zEVl5nTGSTCA78dKaDyRzSkQB8iU0ZRJfpWV7XMIRj87VDmNvPdQqOjuFhGRQCvTMShA==}
+  argon2@0.45.1:
+    resolution: {integrity: sha512-skm+/WCjkGqCQxF7FG1LuZXM5yvbFjgbfiCGsud2oLgaDhh6b6dbH0b1EkghbM+xx4Bj8Ape+KKgixoIlWZicQ==}
     engines: {node: '>=16.17.0'}
 
   argparse@2.0.1:
@@ -1717,7 +1717,7 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
-  argon2@0.45.0:
+  argon2@0.45.1:
     dependencies:
       '@phc/format': 1.0.0
       cross-env: 10.1.0

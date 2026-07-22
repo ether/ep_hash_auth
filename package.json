@@ -34,7 +34,7 @@
     "url": "https://etherpad.org/"
   },
   "optionalDependencies": {
-    "argon2": "^0.45.0",
+    "argon2": "^0.45.1",
     "bcrypt": "^6.0.0"
   },
   "devDependencies": {
