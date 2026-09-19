@@ -252,6 +252,21 @@ describe('ep_hash_auth authenticate', function () {
       assert.equal(session.user.is_admin, true);
     });
 
+    it('denies admin when .adm exists but cannot be read', async function () {
+      // Only a genuinely absent .adm (ENOENT) may fall through to
+      // settings.json. An unreadable one must fail closed, or a demotion
+      // file that loses its permissions silently re-grants admin. A
+      // directory reproduces this deterministically (EISDIR) without
+      // depending on the uid the tests run as.
+      settings.users.trent = {is_admin: true};
+      writeUser('trent', {'.hash': sha512Hex('pw')});
+      fs.mkdirSync(path.join(tmpdir, 'trent', '.adm'), {recursive: true});
+      const {result, session} = await callAuthenticate(
+          plugin, {authorization: basicHeader('trent', 'pw')});
+      assert.deepEqual(result, [true]);
+      assert.equal(session.user.is_admin, false);
+    });
+
     it('still falls back to hash_adm when settings.json has no is_admin', async function () {
       settings.ep_hash_auth.hash_adm = true;
       try {

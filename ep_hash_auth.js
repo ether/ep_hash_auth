@@ -165,7 +165,18 @@ exports.authenticate = (hook_name, context, cb) => {
                   // /admin answered 403 (etherpad#8110).
                   const configuredUser = settings.users[username];
                   let adm = false;
-                  if (err) {
+                  if (err && err.code !== 'ENOENT') {
+                    // The file is there but unreadable (permissions, EISDIR,
+                    // I/O error…). Only a genuinely absent file may fall
+                    // through to the lower-precedence sources — otherwise an
+                    // unreadable `.adm` holding "false" would silently be
+                    // overridden by settings.json and re-grant admin. Fail
+                    // closed instead.
+                    console.log(
+                        `Warning: could not read ${admpath} for ${username} ` +
+                        `(${err.code}); denying admin rights`);
+                    adm = false;
+                  } else if (err) {
                     adm = configuredUser && configuredUser.is_admin !== undefined
                       ? configuredUser.is_admin : hash_adm;
                   } else {

@@ -39,7 +39,7 @@ The hash_adm_ext parameter defines from which file the is_admin boolean of a use
 
 For a user authenticated from `hash_dir`, the admin flag is resolved most-specific-first:
 
-1. the `.adm` file (`hash_adm_ext`), if it exists — including one containing `false`, so an explicit demotion always wins;
+1. the `.adm` file (`hash_adm_ext`), if it exists — including one containing `false`, so an explicit demotion always wins. A `.adm` that exists but cannot be read (permissions, I/O error) denies admin rather than falling through to the steps below;
 2. otherwise `is_admin` for that user in `settings.json`, if set — a user may be listed under `users` with `is_admin` but no `hash`, keeping the password in `hash_dir`;
 3. otherwise the site-wide `hash_adm` value.
 
