@@ -191,6 +191,98 @@ describe('ep_hash_auth authenticate', function () {
     });
   });
 
+  describe('is_admin declared in settings.json (etherpad#8110)', function () {
+    // These users have an `is_admin` entry in settings.json but no `hash`
+    // there, so they authenticate through hash_dir. The hash_dir branch used
+    // to replace settings.users[username] wholesale, throwing away the
+    // is_admin flag the site administrator had configured. Result: a
+    // successful login followed by 403 from /admin.
+    it('keeps is_admin: true from settings.json when .adm is missing', async function () {
+      settings.users.mallory = {is_admin: true};
+      writeUser('mallory', {'.hash': sha512Hex('pw')});
+      const {result, session} = await callAuthenticate(
+          plugin, {authorization: basicHeader('mallory', 'pw')});
+      assert.deepEqual(result, [true]);
+      assert.equal(session.user.is_admin, true);
+    });
+
+    it('keeps is_admin: true across repeated logins', async function () {
+      settings.users.niaj = {is_admin: true};
+      writeUser('niaj', {'.hash': sha512Hex('pw')});
+      await callAuthenticate(plugin, {authorization: basicHeader('niaj', 'pw')});
+      const {session} = await callAuthenticate(
+          plugin, {authorization: basicHeader('niaj', 'pw')});
+      assert.equal(session.user.is_admin, true);
+    });
+
+    it('keeps is_admin: false from settings.json when .adm is missing', async function () {
+      settings.ep_hash_auth.hash_adm = true;
+      try {
+        const reloaded = loadPlugin();
+        settings.users.olivia = {is_admin: false};
+        writeUser('olivia', {'.hash': sha512Hex('pw')});
+        const {session} = await callAuthenticate(
+            reloaded, {authorization: basicHeader('olivia', 'pw')});
+        assert.equal(session.user.is_admin, false);
+      } finally {
+        settings.ep_hash_auth.hash_adm = false;
+        plugin = loadPlugin();
+      }
+    });
+
+    it('lets an explicit .adm "false" demote a settings.json admin', async function () {
+      settings.users.peggy = {is_admin: true};
+      writeUser('peggy', {
+        '.hash': sha512Hex('pw'),
+        '.adm': 'false',
+      });
+      const {session} = await callAuthenticate(
+          plugin, {authorization: basicHeader('peggy', 'pw')});
+      assert.equal(session.user.is_admin, false);
+    });
+
+    it('lets an explicit .adm "true" promote a settings.json non-admin', async function () {
+      settings.users.rupert = {is_admin: false};
+      writeUser('rupert', {
+        '.hash': sha512Hex('pw'),
+        '.adm': 'true',
+      });
+      const {session} = await callAuthenticate(
+          plugin, {authorization: basicHeader('rupert', 'pw')});
+      assert.equal(session.user.is_admin, true);
+    });
+
+    it('denies admin when .adm exists but cannot be read', async function () {
+      // Only a genuinely absent .adm (ENOENT) may fall through to
+      // settings.json. An unreadable one must fail closed, or a demotion
+      // file that loses its permissions silently re-grants admin. A
+      // directory reproduces this deterministically (EISDIR) without
+      // depending on the uid the tests run as.
+      settings.users.trent = {is_admin: true};
+      writeUser('trent', {'.hash': sha512Hex('pw')});
+      fs.mkdirSync(path.join(tmpdir, 'trent', '.adm'), {recursive: true});
+      const {result, session} = await callAuthenticate(
+          plugin, {authorization: basicHeader('trent', 'pw')});
+      assert.deepEqual(result, [true]);
+      assert.equal(session.user.is_admin, false);
+    });
+
+    it('still falls back to hash_adm when settings.json has no is_admin', async function () {
+      settings.ep_hash_auth.hash_adm = true;
+      try {
+        const reloaded = loadPlugin();
+        settings.users.sybil = {displayname: 'Sybil'};
+        writeUser('sybil', {'.hash': sha512Hex('pw')});
+        const {session} = await callAuthenticate(
+            reloaded, {authorization: basicHeader('sybil', 'pw')});
+        assert.equal(session.user.is_admin, true);
+      } finally {
+        settings.ep_hash_auth.hash_adm = false;
+        plugin = loadPlugin();
+      }
+    });
+  });
+
   describe('settings.users-based auth', function () {
     it('authenticates against settings.users[name].hash', async function () {
       settings.users.kate = {
