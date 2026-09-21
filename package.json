@@ -53,6 +53,10 @@
     "onlyBuiltDependencies": [
       "bcrypt",
       "argon2"
-    ]
+    ],
+    "overrides": {
+      "js-yaml": "^4.3.2",
+      "brace-expansion@1": "^1.1.16"
+    }
   }
 }
